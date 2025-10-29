@@ -1,0 +1,38 @@
+# Columns description
+
+- **nume** - Titlul anunțului publicat de vânzător (ex: "BMW X5 3.0d M-Package 2018"). Coloană de tip metadată.
+- **pret** – Prețul de listare al mașinii (în euro); variabila țintă care trebuie prezisă.
+- **Oferit de** – Tipul vânzătorului: dealer auto sau persoană fizică.
+- **Are VIN (Serie sasiu)** – Indică dacă anunțul include seria de șasiu (VIN).
+- **Marca** – Marca producătorului (ex: "Volkswagen", "BMW", "Dacia").
+- **Model** – Modelul mașinii (ex: "Golf", "X5", "Logan").
+- **Versiune** – Versiunea sau echiparea specifică a modelului.
+- **Anul fabricației** – Anul în care a fost fabricată mașina.
+- **Km** – Kilometrajul total parcurs (în kilometri).
+- **Combustibil** – Tipul de combustibil: benzină, motorină, hibrid, electric etc.
+- **Putere** – Puterea motorului exprimată în cai putere (CP).
+- **Capacitate cilindrica** – Capacitatea motorului (în $cm^3$).
+- **Transmisie** – Tipul de tracțiune: față, spate, integrală (4x4) etc.
+- **Consum Extraurban** – Consum mediu declarat în afara localității (l/100 km).
+- **Cutie de viteze** – Tipul cutiei de viteze: manuală, automată etc.
+- **Consum Urban** – Consum mediu declarat în oraș (l/100 km).
+- **Tip Caroserie** – Tipul caroseriei: Sedan, SUV, Coupe etc.
+- **Emisii CO2** – Nivelul emisiilor de dioxid de carbon (g/km)
+- **Numar de portiere** – Numărul de uși ale vehiculului.
+- **Culoare** – Culoarea caroseriei.
+- **Numar locuri** – Numărul total de locuri disponibile.
+- **Garantie dealer (inclusa in pret)** – Indică dacă mașina este vândută cu garanție inclusă oferită de dealer (luni).
+- **Primul proprietar (de nou)** – Specifică dacă vânzătorul actual este primul proprietar al mașinii.
+- **Fara accident in istoric** – Indică dacă mașina nu a fost implicată în accidente.
+- **Stare** – Starea generală a vehiculului (nou, second-hand)
+- **Audio si tehnologie** – Dotări audio și tehnologice (ex: sistem navigație, Bluetooth).
+- **Confort si echipamente optionale** – Dotări de confort (ex: climă automată, scaune încălzite, piele).
+- **Electronice si sisteme de asistenta** – Sisteme electronice și de asistență (ex: pilot automat, sistem start/stop).
+- **Siguranta** – Dotări de siguranță (ex: airbag-uri, ABS, ESP).
+- **Norma de poluare** – Norma de emisii a motorului (ex: Euro 5, Euro 6).
+- **Tara de origine** – Țara de proveniență a vehiculului.
+- **Data primei inmatriculari** – Data primei înmatriculări a mașinii.
+- **Garantie de la producator pana la** – Data până la care garanția de producător este valabilă.
+- **Tuning** – Indică dacă mașina are modificări estetice sau tehnice neoriginale.
+- **Autonomie** – Autonomia declarată (în kilometri) pentru vehiculele electrice/hibride.
+- **Capacitate baterie** – Capacitatea bateriei (în kWh) pentru vehiculele electrice.
