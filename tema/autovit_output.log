@@ -1,0 +1,285 @@
+nohup: ignoring input
+================================================================================
+PARTEA 2: DATASET AUTOVIT (Prețuri Mașini)
+================================================================================
+
+Set antrenament: (18988, 37)
+Set testare: (4746, 37)
+
+Coloane: ['nume', 'pret', 'Oferit de', 'Are VIN (Serie sasiu)', 'Marca', 'Model', 'Versiune', 'Anul fabricației', 'Km', 'Combustibil', 'Putere', 'Capacitate cilindrica', 'Transmisie', 'Consum Extraurban', 'Cutie de viteze']...
+
+================================================================================
+4.1 EXPLORATORY DATA ANALYSIS - AUTOVIT
+================================================================================
+
+### ANALIZĂ 1: Valori Lipsă ###
+
+Coloane cu valori lipsă (top 15):
+                                   Valori Lipsă  Procent
+Tuning                                    18788    98.95
+Capacitate baterie                        18671    98.33
+Autonomie                                 18650    98.22
+Garantie de la producator pana la         18318    96.47
+Vehicule electrice                        16433    86.54
+Garantie dealer (inclusa in pret)         13741    72.37
+Data primei inmatriculari                 11598    61.08
+Primul proprietar (de nou)                11368    59.87
+Consum Extraurban                         10636    56.01
+Emisii CO2                                 9353    49.26
+Are VIN (Serie sasiu)                      8111    42.72
+Tara de origine                            7713    40.62
+Fara accident in istoric                   7287    38.38
+Norma de poluare                           6074    31.99
+Consum Urban                               5924    31.20
+
+Total coloane cu valori lipsă: 27/37
+
+✓ JUSTIFICARE:
+Dataset provocator cu MULTE valori lipsă - trebuie strategie de imputare
+Identificare coloane cu multe lipsuri → decizie păstrare/eliminare
+
+✓ OBSERVAȚII:
+- Multe features opționale (Garantie, Vehicule electrice, etc.) au multe lipsuri
+- Features tehnice (Emisii CO2, Consumuri) au lipsuri moderate
+- Vom aplica imputation inteligentă pe baza tipului de feature
+
+
+### ANALIZĂ 2: Distribuția Target-ului (Preț) ###
+✓ Grafic salvat: autovit_eda_target.png
+
+Statistici preț:
+count     18988.000000
+mean      25424.654675
+std       29824.752654
+min         600.000000
+25%        9490.000000
+50%       16500.000000
+75%       29999.000000
+max      666666.000000
+Name: pret, dtype: float64
+
+✓ JUSTIFICARE:
+Înțelegere distribuție target pentru:
+- Identificare outlieri (mașini foarte scumpe)
+- Decizie transformare (log) dacă e necesar
+- Alegere metrici evaluare adecvate
+
+✓ OBSERVAȚII:
+- Distribuție asimetrică dreapta (many cheap cars, few expensive)
+- Outlieri clari în zona prețurilor mari (>50,000 EUR)
+- Log-transformarea face distribuția mai normală
+- Presupune modele robuste la outlieri (RandomForest, GradientBoosting)
+
+
+### ANALIZĂ 3: Corelații Features Numerice cu Prețul ###
+✓ Grafic salvat: autovit_eda_correlations.png
+
+Top corelații cu prețul:
+Putere                   0.730846
+Capacitate cilindrica    0.579033
+Consum Extraurban        0.529982
+Anul fabricației         0.473511
+Consum Urban             0.445868
+Name: pret, dtype: float64
+
+Corelații negative:
+Consum Urban         0.445868
+Emisii CO2           0.028583
+Numar locuri        -0.025071
+Numar de portiere   -0.141653
+Km                  -0.437023
+Name: pret, dtype: float64
+
+✓ JUSTIFICARE:
+Corelațiile identifică features predictive puternice:
+- Features cu corelație mare sunt prioritare
+- Detectare multicolinearitate între features
+
+✓ OBSERVAȚII AȘTEPTATE:
+- Anul fabricației: corelație POZITIVĂ (mașini noi = mai scumpe)
+- Kilometraj: corelație NEGATIVĂ (multe km = mai ieftin)
+- Putere: corelație POZITIVĂ (motoare puternice = mai scump)
+- Capacitate cilindrică: corelație POZITIVĂ
+
+
+### ANALIZĂ 4: Features Categorice (Marcă, Combustibil, etc.) ###
+✓ Grafic salvat: autovit_eda_categorical.png
+
+✓ JUSTIFICARE:
+Features categorice au impact mare pe preț:
+- Marca influențează puternic (BMW, Mercedes vs Dacia)
+- Tipul combustibil (electric, hibrid vs benzină)
+- Transmisie, caroserie, etc.
+
+✓ OBSERVAȚII:
+- Mărci premium au prețuri medii mult mai mari
+- Combustibil electric/hibrid = mai scump
+- Transmisie integrală (4x4) = mai scump
+- Caroserii SUV = mai scumpe
+→ OneHot encoding necesar pentru aceste features
+
+
+### ANALIZĂ 5: Trend Preț vs Anul Fabricației ###
+✓ Grafic salvat: autovit_eda_year_trend.png
+
+✓ JUSTIFICARE:
+Relația an-preț este fundamentală pentru mașini:
+- Depreciere în timp
+- Mașini noi = mai scumpe
+- Trend clar = feature predictiv puternic
+
+✓ OBSERVAȚII:
+- Trend crescător clar: mașini recente sunt mai scumpe
+- Depreciere exponențială vizibilă
+- Anul fabricației va fi un predictor TOP
+
+
+### ANALIZĂ 6: Pattern-uri Valori Lipsă ###
+✓ Grafic salvat: autovit_eda_missing_pattern.png
+
+✓ JUSTIFICARE:
+Pattern-urile de lipsuri ajută să:
+- Identificăm dacă lipsurile sunt aleatorii sau sistematice
+- Decidem strategia de imputare
+- Vedem dacă anumite combinații lipsesc întotdeauna
+
+✓ OBSERVAȚII:
+- Unele features (garantii, vehicule electrice) lipsesc pentru majoritatea mașinilor
+- Nu toate mașinile au toate dotările
+- Imputare cu 0 sau "Lipsă" poate fi adecvată pentru dotări
+
+
+✓✓✓ EDA COMPLET: 6+ analize cu justificări clare ✓✓✓
+
+================================================================================
+4.2 FEATURE ENGINEERING & PREPROCESSING - AUTOVIT
+================================================================================
+
+### PAS 1: Strategie Selecție Features ###
+✓ Numerical features selectate (8): ['Anul fabricației', 'Km', 'Putere', 'Capacitate cilindrica', 'Consum Urban', 'Emisii CO2', 'Numar de portiere', 'Numar locuri']
+✓ Categorical features selectate (7): ['Marca', 'Combustibil', 'Transmisie', 'Tip Caroserie', 'Cutie de viteze', 'Oferit de', 'Norma de poluare']
+
+✓ JUSTIFICARE:
+- Excludem coloane cu >50% valori lipsă (prea puțină informație)
+- Excludem categorice cu cardinalitate foarte mare (OneHot exploziv)
+- Excludem coloane text/metadate (nume, descrieri)
+- Păstrăm features cu putere predictivă mare văzute în EDA
+
+
+### PAS 2: Imputarea Valorilor Lipsă ###
+✓ Imputare numerice (median): 8 features
+✓ Imputare categorice (most_frequent): 7 features
+
+✓ JUSTIFICARE IMPUTARE:
+- Numerice → MEDIAN: robust la outlieri (multe prețuri extreme)
+- Categorice → MOST_FREQUENT: păstrează distribuția categoriilor
+- fit pe train, transform pe test: evită data leakage
+
+
+### PAS 3: Encodare Features Categorice ###
+✓ OneHot encoding: 7 features → 97 dummy variables
+  (drop='first' pentru evitare dummy trap)
+
+✓ JUSTIFICARE ENCODING:
+- OneHotEncoding pentru categorice nominale (Marca, Combustibil, etc.)
+- drop='first': evită multicolinearitate perfectă (dummy variable trap)
+- handle_unknown='ignore': categorii noi în test → toate 0
+
+
+### PAS 4: Combinare Features ###
+✓ Dimensiune features finale train: (18988, 105)
+✓ Dimensiune features finale test: (4746, 105)
+
+### PAS 5: Standardizare Features Numerice ###
+✓ Standardizate: ['Anul fabricației', 'Km', 'Putere', 'Capacitate cilindrica', 'Consum Urban', 'Emisii CO2', 'Numar de portiere', 'Numar locuri']
+
+✓ JUSTIFICARE:
+- Scale diferite (Anul: 1990-2024, Km: 0-500000, Putere: 0-500)
+- Esențial pentru SVR, LinearRegression
+- Îmbunătățește performanța și convergența
+
+
+### PAS 6: Selecție Features (Eliminare Low Variance) ###
+✓ După eliminare low variance: 51 features
+  (eliminat 0 features aproape constante)
+
+✓ Split: Train (15190, 51), Validation (3798, 51), Test (4746, 51)
+
+✓✓✓ PREPROCESARE COMPLETĂ ✓✓✓
+
+================================================================================
+4.3 MACHINE LEARNING MODELS - AUTOVIT
+================================================================================
+
+### MODEL 1: LINEAR REGRESSION (Baseline) ###
+MSE: 252548012.43, MAE: 8375.87, R²: 0.7266
+
+### MODEL 2: SVR (Support Vector Regression) ###
+Căutare hiperparametri...
+✓ Cei mai buni hiperparametri: {'kernel': 'linear', 'gamma': 'auto', 'epsilon': 1.0, 'C': 10}
+MSE: 372721061.55, MAE: 7467.33, R²: 0.5964
+
+### MODEL 3: RANDOM FOREST REGRESSOR ###
+Căutare hiperparametri...
+✓ Cei mai buni hiperparametri: {'n_estimators': 300, 'min_samples_split': 2, 'max_features': 'sqrt', 'max_depth': 30}
+MSE: 95690455.11, MAE: 3653.73, R²: 0.8964
+
+### MODEL 4: GRADIENT BOOSTING (loss='squared_error') ###
+Căutare hiperparametri...
+✓ Cei mai buni hiperparametri: {'subsample': 0.9, 'n_estimators': 300, 'max_depth': 5, 'learning_rate': 0.1}
+MSE: 84358626.55, MAE: 3597.90, R²: 0.9087
+
+### MODEL 5: GRADIENT BOOSTING (loss='quantile') ###
+Antrenare modele cuantile...
+MSE (α=0.50): 113918378.82, MAE: 3799.61, R²: 0.8767
+✓ Acoperire interval 90%: 88.84%
+
+### MODEL 6: QUANTILE REGRESSOR ###
+Căutare hiperparametri...
+✓ Cei mai buni hiperparametri: {'solver': 'highs', 'alpha': 0.001}
+MSE: 338921200.32, MAE: 7217.15, R²: 0.6330
+
+================================================================================
+TABEL COMPARATIV REZULTATE - AUTOVIT
+================================================================================
+
+                                         MSE          MAE        R2
+LinearRegression           252548012.426476  8375.874581  0.726553
+SVR                        372721061.551683  7467.328458  0.596435
+RandomForest                95690455.105207  3653.734954  0.896391
+GradientBoosting_SE         84358626.552251  3597.899749   0.90866
+GradientBoosting_Quantile  113918378.821246   3799.61274  0.876655
+QuantileRegressor          338921200.317711  7217.147301  0.633032
+
+### CEL MAI BUN MODEL ###
+Cel mai mic MSE: GradientBoosting_SE = 84358626.55
+Cel mai mic MAE: GradientBoosting_SE = 3597.90
+Cel mai mare R²: GradientBoosting_SE = 0.9087
+
+✓ Grafic salvat: autovit_models_comparison.png
+
+✓ Predicții salvate: predictii_autovit_final.csv (folosind GradientBoosting_SE)
+
+================================================================================
+✓✓✓ PARTEA 2 COMPLETĂ - AUTOVIT ✓✓✓
+================================================================================
+
+Implementare completă conform tema.pdf:
+  ✓ 4.1 EDA: 6+ analize cu justificări
+  ✓ 4.2 Preprocesare: imputare, encoding, standardizare, feature selection
+  ✓ 4.3 Modele: LinearRegression, SVR, RandomForest, GradientBoosting (SE + Quantile), QuantileRegressor
+  ✓ Hiperparametri: RandomizedSearchCV pentru toate modelele
+  ✓ Evaluare: MSE, MAE, R² pentru toate modelele
+
+✓ Script executat cu succes!
+
+Grafice generate:
+  - autovit_eda_target.png
+  - autovit_eda_correlations.png
+  - autovit_eda_categorical.png
+  - autovit_eda_year_trend.png
+  - autovit_eda_missing_pattern.png
+  - autovit_models_comparison.png
+
+Fișiere generate:
+  - predictii_autovit_final.csv
